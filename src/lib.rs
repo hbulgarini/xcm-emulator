@@ -1,6 +1,7 @@
 pub use codec::Encode;
 pub use frame_support::{
-    assert_ok, instances::Instance1, pallet_prelude::Weight, traits::fungibles::Inspect,
+    assert_ok, instances::Instance1, pallet_prelude::Weight, sp_io, sp_tracing,
+    traits::fungibles::Inspect,
 };
 pub use integration_tests_common::{
     constants::{
@@ -9,8 +10,9 @@ pub use integration_tests_common::{
         penpal, statemine, PROOF_SIZE_THRESHOLD, REF_TIME_THRESHOLD, XCM_V3,
     },
     AccountId, Kusama, KusamaPallet, KusamaReceiver, KusamaSender, PenpalKusamaReceiver,
-    PenpalKusamaSender, StateminePallet, StatemineReceiver, StatemineSender,
+    PenpalKusamaSender, StatemineReceiver, StatemineSender,
 };
+
 pub use polkadot_core_primitives::InboundDownwardMessage;
 pub use xcm::{
     prelude::*,
@@ -18,8 +20,7 @@ pub use xcm::{
 };
 use xcm_emulator::{
     assert_expected_events, bx, cumulus_pallet_dmp_queue, decl_test_networks, decl_test_parachains,
-    helpers::weight_within_threshold, Network, Parachain, RelayChain,
-    TestExt,
+    helpers::weight_within_threshold, Network, Parachain, RelayChain, TestExt,
 };
 
 decl_test_parachains! {
@@ -66,7 +67,7 @@ decl_test_parachains! {
             PolkadotXcm: penpal_runtime::PolkadotXcm,
             Assets: penpal_runtime::Assets,
         }
-    },
+    }
 }
 
 decl_test_networks! {
@@ -74,8 +75,8 @@ decl_test_networks! {
         relay_chain = Kusama,
         parachains = vec![
             Statemine,
-            PenpalKusama
-        ],
+            PenpalKusama,
+        ]
     }
 }
 
