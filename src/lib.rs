@@ -20,7 +20,7 @@ pub use xcm::{
 };
 use xcm_emulator::{
     assert_expected_events, bx, cumulus_pallet_dmp_queue, decl_test_networks, decl_test_parachains,
-    helpers::weight_within_threshold, Network, NetworkComponent, Parachain as Para,
+    helpers::weight_within_threshold, Network, NetworkComponent, Parachain as Para, Parachain,
     RelayChain as Relay, TestExt,
 };
 
