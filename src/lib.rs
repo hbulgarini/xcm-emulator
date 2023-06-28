@@ -12,7 +12,9 @@ pub use integration_tests_common::{
     AccountId, Kusama, KusamaPallet, KusamaReceiver, KusamaSender, PenpalKusamaReceiver,
     PenpalKusamaSender, StatemineReceiver, StatemineSender,
 };
+pub use sp_core::{sr25519, storage::Storage, Get};
 
+pub use parachains_common::{AuraId, Balance, BlockNumber, StatemintAuraId};
 pub use polkadot_core_primitives::InboundDownwardMessage;
 pub use xcm::{
     prelude::*,
@@ -20,8 +22,7 @@ pub use xcm::{
 };
 use xcm_emulator::{
     assert_expected_events, bx, cumulus_pallet_dmp_queue, decl_test_networks, decl_test_parachains,
-    helpers::weight_within_threshold, Network, NetworkComponent, Parachain as Para, Parachain,
-    RelayChain as Relay, TestExt,
+    helpers::weight_within_threshold, NetworkComponent, Parachain, RelayChain, TestExt,
 };
 
 decl_test_parachains! {
@@ -77,7 +78,7 @@ decl_test_networks! {
         parachains = vec![
             Statemine,
             PenpalKusama,
-        ]
+        ],
     }
 }
 
