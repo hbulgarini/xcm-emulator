@@ -1,3 +1,4 @@
+use crate::Kusama;
 use crate::*;
 use xcm_emulator::{Parachain as Para, RelayChain as Relay};
 
