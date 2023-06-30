@@ -10,8 +10,8 @@ pub use integration_tests_common::{
         kusama::ED as KUSAMA_ED,
         penpal, statemine, PROOF_SIZE_THRESHOLD, REF_TIME_THRESHOLD, XCM_V3,
     },
-    AccountId, KusamaReceiver, KusamaSender, PenpalKusamaReceiver, PenpalKusamaSender,
-    StatemineReceiver, StatemineSender,
+    AccountId, KusamaReceiver, KusamaSender, PenpalKusamaSender,
+    StatemineReceiver, StatemineSender, PenpalKusamaReceiver,
 };
 pub use parachains_common::{AuraId, Balance, BlockNumber, StatemintAuraId};
 pub use polkadot_core_primitives::InboundDownwardMessage;

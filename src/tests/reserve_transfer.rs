@@ -1,6 +1,8 @@
 use crate::Kusama;
 use crate::*;
+use std::sync::Once;
 use xcm_emulator::{Parachain as Para, RelayChain as Relay};
+use frame_support::traits::PalletInfoAccess;
 
 #[test]
 fn reserve_transfer_native_asset_from_relay_to_assets() {
@@ -70,4 +72,98 @@ fn reserve_transfer_native_asset_from_relay_to_assets() {
         relay_sender_balance_after
     );
     assert_eq!(para_sender_balance_after, para_receiver_balance_before);
+}
+
+#[test]
+fn reserve_transfer_asset_from_statemine_parachain_to_penpal_parachain() {
+    // Init tests variables
+    const ASSET_ID: u32 = 1984;
+    const AMOUNT: u128 = 20_000_000_000;
+    const MINT_AMOUNT: u128 = 100_000_000_000_000;
+    let root_statemine = <Statemine as Para>::RuntimeOrigin::root();
+    let penpal_root = <PenpalKusama as Para>::RuntimeOrigin::root();
+
+    let statemine_remote: MultiLocation = MultiLocation {
+        parents: 1,
+        interior: X1(Parachain(Statemine::para_id().into())),
+    };
+    let penpal_remote: MultiLocation = MultiLocation {
+        parents: 1,
+        interior: X1(Parachain(PenpalKusama::para_id().into())),
+    };
+    let statemine_origin = <Statemine as Para>::RuntimeOrigin::signed(StatemineSender::get());
+    let beneficiary: VersionedMultiLocation = AccountId32 {
+        network: None,
+        id: PenpalKusamaReceiver::get().into(),
+    }
+    .into();
+    let asset_to_transfer: VersionedMultiAssets = (
+        X2(PalletInstance(50.into()), GeneralIndex(ASSET_ID as u128)),
+        AMOUNT,
+    )
+        .into();
+    let fee_asset_item = 0;
+    let weight_limit = WeightLimit::Unlimited;
+
+    PenpalKusama::execute_with(|| {
+        type RuntimeEvent = <PenpalKusama as Para>::RuntimeEvent;
+
+        assert_ok!(<PenpalKusama as PenpalKusamaPallet>::PolkadotXcm::force_xcm_version(
+            penpal_root.clone(),
+            bx!(statemine_remote),
+            XCM_V3
+        ));
+
+        assert_ok!(<PenpalKusama as PenpalKusamaPallet>::Assets::force_create(
+            penpal_root.clone(),
+            ASSET_ID.into(),
+            PenpalKusamaSender::get().into(),
+            true,
+            10000u128.into(),
+        ));
+    });
+
+    Statemine::execute_with(|| {
+        assert_ok!(<Statemine as StateminePallet>::Assets::force_create(
+            root_statemine.clone(),
+            ASSET_ID.into(),
+            StatemineSender::get().into(),
+            true,
+            10000u128.into(),
+        ));
+
+        assert_ok!(<Statemine as StateminePallet>::Assets::mint(
+            <Statemine as Para>::RuntimeOrigin::signed(StatemineSender::get()),
+            ASSET_ID.into(),
+            StatemineSender::get().into(),
+            MINT_AMOUNT.into(),
+        ));
+
+        assert_ok!(
+            <Statemine as StateminePallet>::PolkadotXcm::force_xcm_version(
+                root_statemine,
+                bx!(penpal_remote),
+                XCM_V3
+            )
+        );
+
+        assert_ok!(
+            <Statemine as StateminePallet>::PolkadotXcm::limited_reserve_transfer_assets(
+                <Statemine as Para>::RuntimeOrigin::signed(StatemineSender::get()),
+                bx!(penpal_remote.into()),
+                bx!(beneficiary),
+                bx!(asset_to_transfer),
+                fee_asset_item,
+                weight_limit,
+            )
+        );
+    });
+
+    PenpalKusama::execute_with(|| {
+        type RuntimeEvent = <PenpalKusama as Para>::RuntimeEvent;
+
+        let balance =
+            <PenpalKusama as PenpalKusamaPallet>::Assets::balance(ASSET_ID.into(), PenpalKusamaReceiver::get());
+        println!("balance: {:?}", balance);
+    });
 }
